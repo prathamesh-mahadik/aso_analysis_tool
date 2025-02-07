@@ -38,17 +38,21 @@ def scrape_playstore_app_data(url: str):
         app_data['Description'] = get_text_or_default(soup.find('div', class_='bARER'))
         
         rating_value = soup.find('div', class_='jILTFe')
-        app_data['Rating'] = get_text_or_default(rating_value)
+        rating_value_text = rating_value.text.strip() if rating_value else 'Not Available'
+        app_data['Rating'] = rating_value_text  #get_text_or_default(rating_value)
         
+        # Extract the rating description from the aria-label attribute
         aria_label_div = soup.find('div', class_='I26one')
-        app_data['Rating Description'] = aria_label_div['aria-label'] if aria_label_div and 'aria-label' in aria_label_div.attrs else 'Not Available'
-        
+        if aria_label_div and 'aria-label' in aria_label_div.attrs: # type: ignore
+            rating_description_text = aria_label_div['aria-label'] # type: ignore
+        else:
+            rating_description_text = 'Not Available'
+        app_data['Rating Description'] = rating_description_text  # aria_label_div['aria-label'] if aria_label_div and 'aria-label' in aria_label_div.attrs else 'Not Available'
+    
         app_data['Number of Reviews'] = get_text_or_default(soup.find('div', class_='g1rdde'))
         app_data['Number of Downloads'] = soup.find_all('div', class_='ClM7O')[1].text.strip() if len(soup.find_all('div', class_='ClM7O')) > 1 else 'Not Available'
-        
         developer = soup.find('div', class_='Vbfug auoIOc')
-        app_data['Developer'] = developer.find('span').text.strip() if developer and developer.find('span') else 'Not Available'
-        
+        app_data['Developer'] = developer.find('span').text.strip() if developer and developer.find('span') else 'Not Available' # type: ignore
         app_data['Price'] = get_text_or_default(soup.find('span', class_='VfPp2b'), default='Free')
     except Exception as e:
         return {"error": f"Error extracting data: {str(e)}"}
