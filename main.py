@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Query # type: ignore
 from pydantic import BaseModel, HttpUrl # type: ignore
 import httpx
+import requests
 from bs4 import BeautifulSoup
 
 app = FastAPI()
