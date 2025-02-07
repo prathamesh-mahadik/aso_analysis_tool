@@ -1,8 +1,19 @@
 from fastapi import FastAPI, Query
 import requests
+from fastapi.middleware.cors import CORSMiddleware
 from bs4 import BeautifulSoup
 
 app = FastAPI()
+
+# Enable CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins (change this to specific origins in production)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 def scrape_playstore_app_data(url: str):
     """Scrapes data from a Google Play Store app URL."""
