@@ -33,8 +33,6 @@ async def crawl_url(request: CrawlRequest):
 
 
 
-
-
 def scrape_playstore_app_data(url: str):
     """Scrapes data from a Google Play Store app URL."""
     headers = {
