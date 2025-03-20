@@ -1,10 +1,12 @@
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.responses import JSONResponse
 import requests
 from fastapi.middleware.cors import CORSMiddleware
 from bs4 import BeautifulSoup
 from openai import OpenAI
 from pydantic import BaseModel
 import os
+import json
 
 app = FastAPI()
 
@@ -70,48 +72,69 @@ def scrape_playstore_app_data(url: str):
     
     try:
         completion = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "user", "content": "Act as an Google App Store Optimization Expert and help increase this apps ranking which is live in the play store."+
-                 f"This data is an app's the google play store listing data: {app_data} . I want you to analyze this and do the following:"+
-                 "1) figure out all the keywords, as a list of strings"+
-                 "2) Give a list of more keywords suggestion that can help increase the ranking, as a list of string."+
-                 "3) Give an ASO optimized title of upto 30 characters, as a string."+
-                 "4) Give an ASO optimized short description of upto 80 characters, as a string."+
-                 "5) Give an ASO optimized long description of upto 3000 characters, as a string."+
-                 "6) By who much will the rank increase and an estimation of time that is need for the rank to increase, as a string."+
-                 "7) List of sentences with keywords that can be given as reviews to the app, as list of strings."+
-                 "You have to provide this data in a specific json format: { keywords:[], keyword_suggestions:[], title:"", short_description:"", long_description:"", rank_time_estimate:"",review_suggestions:[]}"+
-                 "Rules you need to follow strictly is that you must only return this above given json format in response and nothing extra."}
-            ]
-        )  
+    model="gpt-4o",
+    messages=[
+        {
+            "role": "user",
+            "content": """Act as a Google App Store Optimization (ASO) expert. Analyze the given app data and provide an optimized response in **pure JSON format**.
+
+            ### **App Data:**
+            {app_data}
+
+            ### **Strict Output Requirements:**
+            - The output **must** be **a valid JSON object** (no markdown, no extra text, no `\n` characters).
+            - **Do not** use triple backticks (` ```json `) or any special formatting.
+            - The JSON must contain the following fields:
+              - `keywords`: List of target keywords.
+              - `keyword_suggestions`: List of additional keyword suggestions.
+              - `title`: ASO-optimized title (max 30 characters).
+              - `short_description`: Optimized short description (max 80 characters).
+              - `long_description`: Detailed long description (min 1500 characters and max 3000 characters).
+              - `rank_time_estimate`: Estimated improvement timeframe.
+              - `review_suggestions`: List of review sentence suggestions (at least 5).
+
+            ### **JSON Format Example:**
+            {
+              "keywords": ["jawline exercises", "mewing", "face yoga"],
+              "keyword_suggestions": ["double chin removal", "facial toning"],
+              "title": "ASO-optimized title (max 30 characters)",
+              "short_description": "Short Description text (max 80 characters)s",
+              "long_description": "Long Description text (min 1500 characters and max 3000 characters)",
+              "rank_time_estimate": "4-6 weeks with consistent use.",
+              "review_suggestions": ["This app changed my jawline!", "Easy and effective exercises!"]
+            }
+
+            Strictly return the response **as a JSON object only**, without any additional formatting or text.
+            """
+                    }
+                ],
+                response_format={"type": "json_object"}  # ✅ Enforces pure JSON output
+        )
+
+
         # return app_data
-        analysis_result= {"app_details":app_data, "analysis": completion.choices[0].message.content}
+        # print(completion.choices[0].message.content)
+        
+        # Parse the JSON string into a Python dictionary
+        new_response = json.loads(completion.choices[0].message.content)
+
+        # Merge the two dictionaries
+        combined_data = {}
+        combined_data['app_data']=app_data
+        combined_data['analysis_result']=new_response #completion.choices[0].message.content
+        # Convert back to JSON format (for response)
+        analysis_result = json.dumps(combined_data, indent=2)
+        print(combined_data)
+        
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-    return analysis_result   
+    return JSONResponse(content=combined_data)    
     
 
 @app.get("/scrape")
 def scrape_playstore(url: str = Query(..., title="Google Play Store App URL")):
-    """API endpoint to scrape app data from the Google Play Store."""
     return scrape_playstore_app_data(url)
 
 
-    
-class GPTRequest(BaseModel):
-    prompt: str
-
-@app.post("/generate1")
-def generate_text1():
-    try:
-        completion = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "user", "content": ""}
-            ]
-        )  
-        return {"response": completion.choices[0].message.content}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+ 
