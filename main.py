@@ -2,7 +2,6 @@ from fastapi import FastAPI, HTTPException, Query
 import requests
 from fastapi.middleware.cors import CORSMiddleware
 from bs4 import BeautifulSoup
-from pydantic import BaseModel
 from openai import OpenAI
 import os
 
@@ -77,16 +76,14 @@ def scrape_playstore(url: str = Query(..., title="Google Play Store App URL")):
 
 
 
-class GPTRequest(BaseModel):
-    prompt: str
 
 @app.post("/generate")
-def generate_text(request: GPTRequest):
+def generate_text(prompt: str):
     try:
         completion = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "user", "content": request.prompt}
+                {"role": "user", "content": prompt}
             ]
         )
         return {"response": completion.choices[0].message["content"]} # type: ignore
