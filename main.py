@@ -3,6 +3,7 @@ import requests
 from fastapi.middleware.cors import CORSMiddleware
 from bs4 import BeautifulSoup
 from openai import OpenAI
+from pydantic import BaseModel
 import os
 
 app = FastAPI()
@@ -87,5 +88,21 @@ def generate_text(prompt: str):
             ]
         )
         return {"response": completion.choices[0].message["content"]} # type: ignore
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+class GPTRequest(BaseModel):
+    prompt: str
+
+@app.post("/generate1")
+def generate_text1(request: GPTRequest):
+    try:
+        completion = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "user", "content": request.prompt}
+            ]
+        )  
+        return {"response": completion.choices[0].message.content}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
