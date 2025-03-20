@@ -16,7 +16,6 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 
-
 # Initia
 # Enable CORS
 app.add_middleware(
@@ -85,21 +84,21 @@ def scrape_playstore_app_data(url: str):
             - The output **must** be **a valid JSON object** (no markdown, no extra text, no `\n` characters).
             - **Do not** use triple backticks (` ```json `) or any special formatting.
             - The JSON must contain the following fields:
-              - `keywords`: List of target keywords.
-              - `keyword_suggestions`: List of additional keyword suggestions.
+              - `keywords`: List of target keywords (minimum 8-10 keywords).
+              - `keyword_suggestions`: List of additional keyword suggestions (minimum 5-10 keywords)..
               - `title`: ASO-optimized title (max 30 characters).
               - `short_description`: Optimized short description (max 80 characters).
-              - `long_description`: Detailed long description (min 1500 characters and max 3000 characters).
+              - `long_description`: Detailed long description (min 2500 characters and max 3000 characters).
               - `rank_time_estimate`: Estimated improvement timeframe.
               - `review_suggestions`: List of review sentence suggestions (at least 5).
 
             ### **JSON Format Example:**
             {
-              "keywords": ["jawline exercises", "mewing", "face yoga"],
-              "keyword_suggestions": ["double chin removal", "facial toning"],
+              "keywords": ["jawline exercises", "mewing", "face yoga" , "at least more 5 keyword"],
+              "keyword_suggestions": ["double chin removal", "facial toning", "at least more 4 keyword"],
               "title": "ASO-optimized title (max 30 characters)",
               "short_description": "Short Description text (max 80 characters)s",
-              "long_description": "Long Description text (min 1500 characters and max 3000 characters)",
+              "long_description": "Long Description text (min 2500 characters and max 3000 characters)",
               "rank_time_estimate": "4-6 weeks with consistent use.",
               "review_suggestions": ["This app changed my jawline!", "Easy and effective exercises!"]
             }
