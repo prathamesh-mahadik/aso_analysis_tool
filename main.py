@@ -71,16 +71,17 @@ def scrape_playstore_app_data(url: str):
     
     try:
         completion = client.chat.completions.create(
-    model="gpt-4.5-preview",
+    model="gpt-4o",
     messages=[
         {
             "role": "user",
             "content": """Act as a Google App Store Optimization (ASO) expert. Analyze the given app data and provide an optimized response in **pure JSON format**.
 
-            ### **App Data:**
-            {app_data}
+            ### **App Data:**"""+
+            
+           f"{app_data}"+
 
-            ### **Strict Output Requirements:**
+           """ ### **Strict Output Requirements:**
             - The output **must** be **a valid JSON object** (no markdown, no extra text, no `\n` characters).
             - **Do not** use triple backticks (` ```json `) or any special formatting.
             - The JSON must contain the following fields:
@@ -94,13 +95,13 @@ def scrape_playstore_app_data(url: str):
 
             ### **JSON Format Example:**
             {
-              "keywords": ["","","","","","","","","",""],
-              "keyword_suggestions": ["","","","","","","","","",""],
+              "keywords": [],
+              "keyword_suggestions": [],
               "title": "ASO-optimized title (max 30 characters)",
               "short_description": "Short Description text (max 80 characters)s",
               "long_description": "Long Description text (min 2500 characters and max 3000 characters)",
               "rank_time_estimate": "",
-              "review_suggestions": ["","","","","","","","","",""],
+              "review_suggestions": [],
             }
 
             Strictly return the response **as a JSON object only**, without any additional formatting or text.
