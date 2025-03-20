@@ -71,7 +71,7 @@ def scrape_playstore_app_data(url: str):
     
     try:
         completion = client.chat.completions.create(
-    model="gpt-4o",
+    model="gpt-4.5-preview",
     messages=[
         {
             "role": "user",
@@ -84,18 +84,18 @@ def scrape_playstore_app_data(url: str):
             - The output **must** be **a valid JSON object** (no markdown, no extra text, no `\n` characters).
             - **Do not** use triple backticks (` ```json `) or any special formatting.
             - The JSON must contain the following fields:
-              - `keywords`: List of target keywords (minimum 8-10 keywords).
+              - `keywords`: List of target keywords in the app description (minimum 8-10 keywords).
               - `keyword_suggestions`: List of additional keyword suggestions (minimum 5-10 keywords)..
-              - `title`: ASO-optimized title (max 30 characters).
-              - `short_description`: Optimized short description (max 80 characters).
-              - `long_description`: Detailed long description (min 2500 characters and max 3000 characters).
+              - `title`: ASO-optimized relevant title (max 30 characters).
+              - `short_description`: Optimized relevant short description (max 80 characters).
+              - `long_description`: Optimized relevant long description (min 2500 characters and max 3000 characters).
               - `rank_time_estimate`: Estimated improvement timeframe.
               - `review_suggestions`: List of review sentence suggestions (at least 5).
 
             ### **JSON Format Example:**
             {
-              "keywords": ["jawline exercises", "mewing", "face yoga" , "at least more 5 keyword"],
-              "keyword_suggestions": ["double chin removal", "facial toning", "at least more 4 keyword"],
+              "keywords": ["jawline exercises", "mewing", "face yoga" ],
+              "keyword_suggestions": ["double chin removal", "facial toning"],
               "title": "ASO-optimized title (max 30 characters)",
               "short_description": "Short Description text (max 80 characters)s",
               "long_description": "Long Description text (min 2500 characters and max 3000 characters)",
