@@ -1,14 +1,25 @@
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, HTTPException, Query
 import requests
 from fastapi.middleware.cors import CORSMiddleware
 from bs4 import BeautifulSoup
+from pydantic import BaseModel
+from openai import OpenAI
+import os
 
 app = FastAPI()
 
+# Load API key from environment variable (recommended for security)
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+# Initialize OpenAI client
+client = OpenAI(api_key=OPENAI_API_KEY)
+
+
+
+# Initia
 # Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins (change this to specific origins in production)
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -33,8 +44,8 @@ def scrape_playstore_app_data(url: str):
     
     try:
         app_data['Name'] = get_text_or_default(soup.find('title'))
-        app_data['Developer URL'] = soup.find('meta', attrs={'name': 'appstore:developer_url'}).get('content', 'Not Available')
-        app_data['Bundle ID'] = soup.find('meta', attrs={'name': 'appstore:bundle_id'}).get('content', 'Not Available')
+        app_data['Developer URL'] = soup.find('meta', attrs={'name': 'appstore:developer_url'}).get('content', 'Not Available') # type: ignore
+        app_data['Bundle ID'] = soup.find('meta', attrs={'name': 'appstore:bundle_id'}).get('content', 'Not Available') # type: ignore
         app_data['Description'] = get_text_or_default(soup.find('div', class_='bARER'))
         
         rating_value = soup.find('div', class_='jILTFe')
@@ -63,3 +74,21 @@ def scrape_playstore_app_data(url: str):
 def scrape_playstore(url: str = Query(..., title="Google Play Store App URL")):
     """API endpoint to scrape app data from the Google Play Store."""
     return scrape_playstore_app_data(url)
+
+
+
+class GPTRequest(BaseModel):
+    prompt: str
+
+@app.post("/generate")
+def generate_text(request: GPTRequest):
+    try:
+        completion = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "user", "content": request.prompt}
+            ]
+        )
+        return {"response": completion.choices[0].message["content"]} # type: ignore
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
